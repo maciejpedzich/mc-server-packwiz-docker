@@ -1,0 +1,38 @@
+services:
+  packwiz:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    hostname: packwiz
+    expose:
+      - 3000
+  minecraft:
+    image: itzg/minecraft-server
+    ports:
+      - 25565:25565
+      # NOTE: exposing the RCON port is generally not recommended.
+      # It's best to send commands via `rcon-cli` inside the container instead.
+      # Uncomment the line below if you *really* need external access to the console.
+      # - 25575:25575
+    depends_on:
+      packwiz:
+        condition: service_healthy
+        restart: true
+    env_file: .env
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - minecraft-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - /usr/local/bin/mc-monitor
+        - status
+        - "--host"
+        - localhost
+      interval: 3s
+      timeout: 10s
+      retries: 15
+volumes:
+  minecraft-data:
+    external: false

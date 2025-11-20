@@ -1,0 +1,8 @@
+.dockerignore
+.env
+.gitattributes
+.gitignore
+compose.yml
+Dockerfile
+README.md
+setup.sh
