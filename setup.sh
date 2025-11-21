@@ -22,27 +22,27 @@ if [[ $? -eq 0 ]]; then
     exit 1
 fi
 
-VERSION_FIELDS=$(cat pack.toml | tail -n 2 | tr -d ' "')
-FIRST_FIELD=$(echo "$VERSION_FIELDS" | head -n 1)
-SECOND_FIELD=$(echo "$VERSION_FIELDS" | tail -n 1)
-MINECRAFT_FIELD=$([[ "$FIRST_FIELD" =~ minecraft ]] && echo "$FIRST_FIELD" || echo "$SECOND_FIELD")
-MOD_LOADER_FIELD=$([[ "$FIRST_FIELD" =~ minecraft ]] &&  echo "$SECOND_FIELD"  || echo "$FIRST_FIELD" )
+version_fields=$(cat pack.toml | tail -n 2 | tr -d ' "')
+first_field=$(echo "$version_fields" | head -n 1)
+second_field=$(echo "$version_fields" | tail -n 1)
 
-MINECRAFT_VERSION=$(echo "$MINECRAFT_FIELD" | cut -d '=' -f 2)
-MOD_LOADER_NAME=$(echo "$MOD_LOADER_FIELD" | cut -d '=' -f 1 | tr '[:lower:]' '[:upper:]')
-MOD_LOADER_VERSION=$(echo "$MOD_LOADER_FIELD" | cut -d '=' -f 2)
-LOADER_VERSION_VAR_NAME=$([[ "$MOD_LOADER_NAME" = "FORGE" ]] && echo "FORGE_VERSION" || echo "${MOD_LOADER_NAME}_LOADER_VERSION")
-RCON_PASSWORD=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 24)
+minecraft_field=$([[ "$first_field" =~ minecraft ]] && echo "$first_field" || echo "$second_field")
+minecraft_version=$(echo "$minecraft_field" | cut -d '=' -f 2)
+
+mod_loader_field=$([[ "$first_field" =~ minecraft ]] &&  echo "$second_field" || echo "$first_field" )
+mod_loader_name=$(echo "$mod_loader_field" | cut -d '=' -f 1 | tr '[:lower:]' '[:upper:]')
+mod_loader_version=$(echo "$mod_loader_field" | cut -d '=' -f 2)
+loader_version_var=$([[ "$mod_loader_name" = "FORGE" ]] && echo "FORGE_VERSION" || echo "${mod_loader_name}_LOADER_VERSION")
 
 echo "# For a complete list of environment variables and their defaults, see:
 # https://docker-minecraft-server.readthedocs.io/en/latest/variables
 
 EULA=true
 PACKWIZ_URL=http://packwiz:3000/pack.toml
-RCON_PASSWORD=${RCON_PASSWORD}
-TYPE=${MOD_LOADER_NAME}
-VERSION=${MINECRAFT_VERSION}
-${LOADER_VERSION_VAR_NAME}=${MOD_LOADER_VERSION}" > .env
+RCON_PASSWORD=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 24)
+TYPE=${mod_loader_name}
+VERSION=${minecraft_version}
+${loader_version_var}=${mod_loader_version}" > .env
 
 echo "Created .env file for the Minecraft server container!"
 
@@ -51,7 +51,7 @@ no-internal-hashes = true" >> pack.toml
 
 echo '#!/bin/bash
 
-if ! [ -x "$(command -v packwiz)" ]; then
+if  [[ ! -x "$(command -v packwiz)" ]]; then
     echo "Error: packwiz is not installed!" >&2
     exit 1
 fi
@@ -67,7 +67,7 @@ touch /tmp/.commit' > .git/hooks/pre-commit
 
 echo '#!/bin/bash
 
-if [ -e /tmp/.commit ]; then
+if [[ -e /tmp/.commit ]]; then
     rm /tmp/.commit
     readarray ignored_files < /tmp/.dockerignore
 
