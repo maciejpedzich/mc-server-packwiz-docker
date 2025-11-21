@@ -93,7 +93,7 @@ fi
 echo "Committing modpack manifest and index..."
 
 git add -A
-git commit -m "(re)init modpack" -q
+git commit -m "Init modpack" -q
 
 if [[ $? -eq 0 ]]; then
     echo "Successfully committed changes!"
